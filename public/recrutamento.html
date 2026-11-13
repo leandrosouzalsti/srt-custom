@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRT Motors Custom | Criar Transmissão HD</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        :root {
+            --preto: #0a0a0a;
+            --cinza-card: #141414;
+            --vermelho: #e60000;
+            --vermelho-hover: #ff1a1a;
+            --branco: #ffffff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body {
+            background-color: var(--preto);
+            background-image: radial-gradient(circle at top, #240000 0%, #0a0a0a 65%);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 25px;
+            min-height: 100vh;
+        }
+        header {
+            width: 100%;
+            max-width: 960px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--vermelho);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        header h1 { font-size: 20px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 900; }
+        header h1 span { color: var(--vermelho); }
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        .back-link {
+            color: var(--branco);
+            text-decoration: none;
+            background: #222;
+            border: 1px solid #333;
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .back-link:hover { border-color: var(--vermelho); }
+        .status-badge {
+            background: var(--cinza-card);
+            border: 1px solid var(--vermelho);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .setup-box {
+            width: 100%;
+            max-width: 960px;
+            background: var(--cinza-card);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #262626;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .row { display: flex; flex-wrap: wrap; gap: 10px; }
+        select, input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 14px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background: var(--preto);
+            color: var(--branco);
+            font-size: 14px;
+            outline: none;
+        }
+        select:focus, input:focus { border-color: var(--vermelho); }
+        button, .btn-link {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 12px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .btn-red { background: var(--vermelho); color: var(--branco); }
+        .btn-red:hover:not(:disabled) { background: var(--vermelho-hover); }
+        .btn-red:disabled {
+            background: #3a1212;
+            color: #888;
+            cursor: not-allowed;
+            border: 1px solid #551a1a;
+        }
+        .btn-white { background: var(--branco); color: var(--preto); }
+        .btn-white:hover { background: #e0e0e0; }
+        .btn-dark { background: #262626; color: var(--branco); border: 1px solid #444; }
+        .btn-dark:hover { border-color: var(--vermelho); }
+
+        .busy-alert {
+            display: none;
+            background: rgba(230, 0, 0, 0.15);
+            border: 1px solid var(--vermelho);
+            color: #ff6b6b;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .link-box {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: #0d0d0d;
+            border: 1px dashed var(--vermelho);
+            padding: 12px 16px;
+            border-radius: 6px;
+        }
+        .link-box span { font-size: 13px; color: #ccc; word-break: break-all; }
+        .link-box strong { color: var(--branco); }
+        .link-actions { display: flex; gap: 8px; }
+
+        .preview-box {
+            width: 100%;
+            max-width: 960px;
+            aspect-ratio: 16 / 9;
+            background: #050505;
+            border: 2px solid #262626;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        video { width: 100%; height: 100%; object-fit: contain; }
+        .placeholder-text { color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>SRT MOTORS <span>CUSTOM</span> • TRANSMISSÃO 1080P</h1>
+        <div class="header-right">
+            <div class="status-badge" id="status">● PRONTO PARA INICIAR</div>
+            <a href="index.html" class="back-link">← Voltar ao Início</a>
+        </div>
+    </header>
+
+    <div class="setup-box">
+        <div class="row">
+            <select id="canalSelect" onchange="atualizarInterfaceCanal()">
+                <option value="transmissao1" id="opt-transmissao1">Canal: Transmissão 1 (🟢 LIVRE)</option>
+                <option value="transmissao2" id="opt-transmissao2">Canal: Transmissão 2 (🟢 LIVRE)</option>
+                <option value="transmissao3" id="opt-transmissao3">Canal: Transmissão 3 (🟢 LIVRE)</option>
+            </select>
+            <input type="text" id="usuario" placeholder="Seu Nome / ID na Cidade">
+            <input type="text" id="nota" placeholder="Descrição (ex: Tunagem / Orçamento)">
+        </div>
+
+        <div class="busy-alert" id="busyAlert"></div>
+
+        <div class="link-box">
+            <span>Link do Cliente (Tela Inteira): <strong id="viewUrlText"></strong></span>
+            <div class="link-actions">
+                <button class="btn-dark" onclick="copiarLinkCliente()">Copiar Link</button>
+                <a href="/transmissao1" target="_blank" id="abrirViewBtn" class="btn-link btn-dark">Abrir Tela</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <button class="btn-red" id="btnIniciar" onclick="iniciarTransmissao()">Criar e Compartilhar Tela (HD)</button>
+            <button class="btn-white" onclick="sincronizarDiscord()">Enviar Print p/ Discord</button>
+        </div>
+    </div>
+
+    <div class="preview-box">
+        <span class="placeholder-text" id="placeholder">Pré-visualização em Full HD aparecerá aqui</span>
+        <video id="localVideo" autoplay muted playsinline style="display:none;"></video>
+    </div>
+
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script>
+        const socket = io();
+        const localVideo = document.getElementById('localVideo');
+        const placeholder = document.getElementById('placeholder');
+        const statusBadge = document.getElementById('status');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const btnIniciar = document.getElementById('btnIniciar');
+        const busyAlert = document.getElementById('busyAlert');
+
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+
+        let transmitindo = false;
+        let localStream = null;
+        const peerConnections = {};
+        let roomsState = { transmissao1: null, transmissao2: null, transmissao3: null };
+
+        function getSelectedRoom() {
+            return document.getElementById('canalSelect').value;
+        }
+
+        function atualizarInterfaceCanal() {
+            const room = getSelectedRoom();
+            const fullUrl = `${window.location.origin}/${room}`;
+            document.getElementById('viewUrlText').innerText = fullUrl;
+            document.getElementById('abrirViewBtn').href = `/${room}`;
+
+            ['transmissao1', 'transmissao2', 'transmissao3'].forEach((r, idx) => {
+                const opt = document.getElementById(`opt-${r}`);
+                const info = roomsState[r];
+                if (info && info.socketId !== socket.id) {
+                    opt.innerText = `Canal: Transmissão ${idx + 1} (🔴 OCUPADO - ${info.usuario})`;
+                } else if (info && info.socketId === socket.id) {
+                    opt.innerText = `Canal: Transmissão ${idx + 1} (🔴 VOCÊ ESTÁ AO VIVO)`;
+                } else {
+                    opt.innerText = `Canal: Transmissão ${idx + 1} (🟢 LIVRE)`;
+                }
+            });
+
+            const ocupante = roomsState[room];
+            if (!transmitindo && ocupante && ocupante.socketId !== socket.id) {
+                busyAlert.style.display = 'block';
+                busyAlert.innerText = `⛔ CANAL OCUPADO: "${ocupante.usuario}" já está transmitindo neste canal. Escolha outro.`;
+                btnIniciar.disabled = true;
+                btnIniciar.innerText = 'Canal Ocupado no Momento';
+            } else {
+                busyAlert.style.display = 'none';
+                btnIniciar.disabled = false;
+                btnIniciar.innerText = 'Criar e Compartilhar Tela (HD)';
+            }
+        }
+
+        socket.on('rooms-status', (state) => {
+            roomsState = state;
+            atualizarInterfaceCanal();
+        });
+
+        atualizarInterfaceCanal();
+
+        function copiarLinkCliente() {
+            const url = document.getElementById('viewUrlText').innerText;
+            navigator.clipboard.writeText(url);
+            alert(`Link copiado:\n${url}`);
+        }
+
+        socket.on('viewer-joined', async (viewerId) => {
+            if (!transmitindo || !localStream) return;
+
+            const pc = new RTCPeerConnection(rtcConfig);
+            peerConnections[viewerId] = pc;
+
+            localStream.getTracks().forEach(track => {
+                const sender = pc.addTrack(track, localStream);
+                const params = sender.getParameters();
+                if (!params.encodings) params.encodings = [{}];
+                params.encodings[0].maxBitrate = 4000000;
+                sender.setParameters(params).catch(() => {});
+            });
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('webrtc-ice-candidate', { to: viewerId, candidate: event.candidate });
+                }
+            };
+
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            socket.emit('webrtc-offer', { to: viewerId, offer });
+        });
+
+        socket.on('webrtc-answer', async (data) => {
+            const pc = peerConnections[data.from];
+            if (pc) {
+                await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+            }
+        });
+
+        socket.on('webrtc-ice-candidate', async (data) => {
+            const pc = peerConnections[data.from];
+            if (pc && data.candidate) {
+                await pc.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(() => {});
+            }
+        });
+
+        async function iniciarTransmissao() {
+            if (transmitindo) {
+                alert('Você já está transmitindo!');
+                return;
+            }
+
+            const room = getSelectedRoom();
+            const roomLabel = room.toUpperCase().replace('TRANSMISSAO', 'TRANSMISSÃO ');
+            const usuario = document.getElementById('usuario').value;
+            const nota = document.getElementById('nota').value;
+
+            socket.emit('request-start-stream', { room, usuario, nota }, async (resposta) => {
+                if (!resposta.ok) {
+                    alert(resposta.msg);
+                    return;
+                }
+
+                try {
+                    localStream = await navigator.mediaDevices.getDisplayMedia({
+                        video: {
+                            width: { ideal: 1920 },
+                            height: { ideal: 1080 },
+                            frameRate: { ideal: 30, max: 60 }
+                        },
+                        audio: false
+                    });
+
+                    const videoTrack = localStream.getVideoTracks()[0];
+                    if (videoTrack && 'contentHint' in videoTrack) {
+                        videoTrack.contentHint = 'detail';
+                    }
+
+                    localVideo.srcObject = localStream;
+                    localVideo.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    statusBadge.innerText = `🔴 AO VIVO 1080P (${roomLabel})`;
+                    transmitindo = true;
+                    document.getElementById('canalSelect').disabled = true;
+
+                    videoTrack.onended = () => {
+                        transmitindo = false;
+                        Object.values(peerConnections).forEach(pc => pc.close());
+                        for (const id in peerConnections) delete peerConnections[id];
+                        localVideo.style.display = 'none';
+                        placeholder.style.display = 'block';
+                        statusBadge.innerText = '● TRANSMISSÃO ENCERRADA';
+                        document.getElementById('canalSelect').disabled = false;
+                        socket.emit('stream-stopped', { room });
+                    };
+                } catch (err) {
+                    socket.emit('stream-stopped', { room });
+                    alert('Compartilhamento cancelado.');
+                }
+            });
+        }
+
+        async function copiarImagemParaClipboard() {
+            canvas.toBlob(async (blob) => {
+                try {
+                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                } catch (e) {}
+            }, 'image/png');
+        }
+
+        function sincronizarDiscord() {
+            if (!transmitindo) {
+                alert('Inicie o compartilhamento de tela primeiro.');
+                return;
+            }
+            canvas.width = localVideo.videoWidth || 1920;
+            canvas.height = localVideo.videoHeight || 1080;
+            ctx.drawImage(localVideo, 0, 0, canvas.width, canvas.height);
+            const image = canvas.toDataURL('image/png');
+
+            socket.emit('sync-webhook', {
+                room: getSelectedRoom(),
+                image,
+                usuario: document.getElementById('usuario').value,
+                nota: document.getElementById('nota').value
+            });
+        }
+
+        socket.on('sync-status', async (res) => {
+            if (res.fallback) await copiarImagemParaClipboard();
+            alert(res.msg);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,227 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRT Motors Custom | Servidores Discord & Canais</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --preto: #080808;
+            --card: #121212;
+            --card-hover: #1a1a1a;
+            --borda: #242424;
+            --vermelho: #e60000;
+            --vermelho-hover: #ff1a1a;
+            --discord: #5865F2;
+            --branco: #ffffff;
+            --cinza: #a8a8a8;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        body {
+            background-color: var(--preto);
+            background-image: radial-gradient(circle at top, #181c42 0%, #080808 65%);
+            color: var(--branco);
+            min-height: 100vh;
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container { width: 100%; max-width: 1040px; }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--discord);
+            padding-bottom: 15px;
+            margin-bottom: 24px;
+        }
+        .top-bar h1 { font-size: 20px; font-weight: 900; text-transform: uppercase; }
+        .top-bar h1 span { color: var(--discord); }
+        .back-btn {
+            color: var(--branco);
+            text-decoration: none;
+            background: #1c1c1c;
+            border: 1px solid #333;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+        .back-btn:hover { border-color: var(--vermelho); }
+
+        /* GRID DE DESTAQUE PARA OS 2 SERVIDORES (MECÂNICA + CIDADE) */
+        .servers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+        .server-banner {
+            border-radius: 12px;
+            padding: 22px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .server-banner.mecanica {
+            background: linear-gradient(135deg, #1b204d, #121212);
+            border: 1px solid var(--discord);
+        }
+        .server-banner.cidade {
+            background: linear-gradient(135deg, #2e0606, #121212);
+            border: 1px solid var(--vermelho);
+        }
+        .server-tag {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 50px;
+            margin-bottom: 8px;
+        }
+        .mecanica .server-tag { background: rgba(88, 101, 242, 0.25); color: #9aa3ff; }
+        .cidade .server-tag { background: rgba(230, 0, 0, 0.25); color: #ff6b6b; }
+
+        .server-banner h2 { font-size: 18px; font-weight: 900; margin-bottom: 6px; }
+        .server-banner p { font-size: 13px; color: var(--cinza); line-height: 1.45; }
+
+        .btn-join {
+            text-align: center;
+            color: var(--branco);
+            text-decoration: none;
+            padding: 13px 20px;
+            border-radius: 7px;
+            font-weight: 800;
+            font-size: 13px;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+        .btn-join.discord { background: var(--discord); }
+        .btn-join.discord:hover { filter: brightness(1.15); transform: translateY(-2px); }
+        .btn-join.red { background: var(--vermelho); }
+        .btn-join.red:hover { background: var(--vermelho-hover); transform: translateY(-2px); }
+
+        /* CATEGORIAS E CANAIS */
+        .cat-title {
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--cinza);
+            margin: 22px 0 12px;
+            border-left: 3px solid var(--vermelho);
+            padding-left: 10px;
+        }
+
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 14px;
+        }
+
+        .channel-card {
+            background: var(--card);
+            border: 1px solid var(--borda);
+            border-left: 4px solid var(--discord);
+            border-radius: 8px;
+            padding: 16px 18px;
+            text-decoration: none;
+            color: var(--branco);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+        }
+        .channel-card:hover {
+            background: var(--card-hover);
+            border-color: var(--discord);
+            transform: translateX(4px);
+        }
+        .ch-info { display: flex; align-items: center; gap: 12px; }
+        .ch-emoji { font-size: 22px; }
+        .ch-info strong { display: block; font-size: 14px; font-weight: 800; }
+        .ch-info span { display: block; font-size: 12px; color: var(--cinza); margin-top: 2px; }
+        .ch-arrow {
+            background: rgba(88, 101, 242, 0.2);
+            color: #9aa3ff;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 5px 10px;
+            border-radius: 5px;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .servers-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="top-bar">
+            <h1>💬 SRT MOTORS <span>DISCORD & CANAIS</span></h1>
+            <a href="index.html" class="back-btn">← Voltar ao Início</a>
+        </div>
+
+        <!-- DESTAQUE: SERVIDOR DA MECÂNICA + SERVIDOR DA CIDADE -->
+        <div class="servers-grid">
+            <div class="server-banner mecanica">
+                <div>
+                    <span class="server-tag">🔧 Oficina Oficial</span>
+                    <h2>Discord • SRT Motors Custom</h2>
+                    <p>Servidor interno da mecânica com tabelas de preços, logs de transmissão, cursos e bate-papo da equipe.</p>
+                </div>
+                <a href="https://discord.gg/SEU_CONVITE_MECANICA" target="_blank" class="btn-join discord">💬 Entrar no Discord da Mecânica</a>
+            </div>
+
+            <div class="server-banner cidade">
+                <div>
+                    <span class="server-tag">🏙️ Servidor Principal RP</span>
+                    <h2>Discord • Cidade Nobre</h2>
+                    <p>Comunidade oficial da Cidade Nobre GTA RP, regras gerais, suporte, anúncios e conexão direta com o servidor.</p>
+                </div>
+                <a href="https://discord.gg/SEU_CONVITE_CIDADE" target="_blank" class="btn-join red">🚀 Entrar no Discord da Cidade</a>
+            </div>
+        </div>
+
+        <!-- CATEGORIA 1: ATENDIMENTO & OFICINA -->
+        <div class="cat-title">🔧 Canais de Atendimento & Oficina</div>
+        <div class="channels-grid">
+            <a href="https://discord.gg/SEU_CONVITE_MECANICA" target="_blank" class="channel-card">
+                <div class="ch-info">
+                    <span class="ch-emoji">📢</span>
+                    <div>
+                        <strong>#avisos-gerais</strong>
+                        <span>Comunicados oficiais da gerência</span>
+                    </div>
+                </div>
+                <span class="ch-arrow">Abrir</span>
+            </a>
+
+            <a href="https://discord.gg/SEU_CONVITE_MECANICA" target="_blank" class="channel-card">
+                <div class="ch-info">
+                    <span class="ch-emoji">💰</span>
+                    <div>
+                        <strong>#tabela-de-preços</strong>
+                        <span>Valores de tunagem, estética e reparo</span>
+                    </div>
+                </div>
+                <span class="ch-arrow">Abrir</span>
+            </a>
+
+            <a href="https://discord.gg/SEU_CONVITE_MECANICA" target="_blank" class="channel-card">
+                <div class="ch-info">
+                    <span class="ch-emoji">🧾</span>
+                    <div>
+                        <strong>#registro-de-serviços</strong>
+                        <span>Comprovantes e atendimentos realizados</span>

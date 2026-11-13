@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRT Motors Custom | Guia do Mecânico</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --preto: #080808;
+            --card: #121212;
+            --borda: #242424;
+            --vermelho: #e60000;
+            --branco: #ffffff;
+            --cinza: #b5b5b5;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        body {
+            background-color: var(--preto);
+            background-image: radial-gradient(circle at top, #240000 0%, #080808 65%);
+            color: var(--branco);
+            min-height: 100vh;
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container { width: 100%; max-width: 960px; }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--vermelho);
+            padding-bottom: 15px;
+            margin-bottom: 24px;
+        }
+        .top-bar h1 { font-size: 20px; font-weight: 900; text-transform: uppercase; }
+        .top-bar h1 span { color: var(--vermelho); }
+        .back-btn {
+            color: var(--branco);
+            text-decoration: none;
+            background: #1c1c1c;
+            border: 1px solid #333;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .back-btn:hover { border-color: var(--vermelho); }
+
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+        }
+        .guide-card {
+            background: var(--card);
+            border: 1px solid var(--borda);
+            border-top: 3px solid var(--vermelho);
+            border-radius: 10px;
+            padding: 22px;
+        }
+        .guide-card h3 {
+            font-size: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .guide-card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+        .guide-card li {
+            font-size: 13px;
+            color: var(--cinza);
+            line-height: 1.5;
+            padding-left: 14px;
+            position: relative;
+        }
+        .guide-card li::before {
+            content: "▸";
+            color: var(--vermelho);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        .guide-card li strong { color: var(--branco); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="top-bar">
+            <h1>📖 SRT MOTORS <span>GUIA DO MECÂNICO</span></h1>
+            <a href="index.html" class="back-btn">← Voltar ao Início</a>
+        </div>
+
+        <div class="guide-grid">
+            <div class="guide-card">
+                <h3>👔 Conduta & Uniforme</h3>
+                <ul>
+                    <li>Sempre utilize o <strong>uniforme oficial da SRT Motors Custom</strong> durante o expediente.</li>
+                    <li>Mantenha o rádio da oficina ativo na frequência combinada pela gerência.</li>
+                    <li>Respeite a ordem de chegada dos clientes nas bancadas 01, 02 e 03.</li>
+                    <li>É proibido realizar serviços fora da tabela oficial de preços da Cidade Nobre.</li>
+                </ul>
+            </div>
+
+            <div class="guide-card">
+                <h3>🎥 Uso das Transmissões</h3>
+                <ul>
+                    <li>Antes de iniciar uma tunagem completa, abra o painel <strong>Criar Transmissão</strong>.</li>
+                    <li>Escolha um canal com status <strong>🟢 Livre</strong> (Transmissão 1, 2 ou 3).</li>
+                    <li>Envie o link em tela cheia ao cliente para que acompanhe cada peça instalada.</li>
+                    <li>Ao finalizar, clique em <strong>Enviar Print p/ Discord</strong> e encerre o compartilhamento.</li>
+                </ul>
+            </div>
+
+            <div class="guide-card">
+                <h3>🚛 Chamados & Guincho</h3>
+                <ul>
+                    <li>Priorize chamados de emergência e veículos capotados nas vias principais.</li>
+                    <li>Utilize sempre a viatura/guincho oficial da oficina devidamente abastecida.</li>
+                    <li>Não abandone veículos da empresa na rua; guarde na garagem ao sair de serviço.</li>
+                    <li>Anuncie no rádio antes de deslocar para chamados distantes.</li>
+                </ul>
+            </div>
+
+            <div class="guide-card">
+                <h3>🎓 Progressão & Cursos</h3>
+                <ul>
+                    <li>Todo <strong>Iniciante</strong> deve ter seu pagamento confirmado no painel de Recrutamento.</li>
+                    <li>Para subir de cargo, realize os cursos práticos de <strong>Tunagem, Estética e Atendimento</strong>.</li>
+                    <li>Instrutores devem registrar todas as aprovações na aba <strong>Aplicação de Cursos</strong>.</li>
+                    <li>Dúvidas sobre valores? Consulte o canal de Tabela no Discord oficial.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

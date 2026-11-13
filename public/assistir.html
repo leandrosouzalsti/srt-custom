@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRT Motors Custom | Ao Vivo</title>
+    <title>SRT Motors Custom | Ao Vivo HD</title>
     <script src="/socket.io/socket.io.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -17,7 +17,7 @@
             justify-content: center;
             font-family: 'Segoe UI', sans-serif;
         }
-        img#remoteScreen {
+        video#remoteVideo {
             width: 100vw;
             height: 100vh;
             object-fit: contain;
@@ -44,7 +44,7 @@
         <p id="waitingText">Aguardando transmissão ao vivo...</p>
     </div>
 
-    <img id="remoteScreen" alt="Transmissão ao vivo" />
+    <video id="remoteVideo" autoplay muted playsinline></video>
 
     <script>
         const socket = io();
@@ -52,16 +52,63 @@
         const currentRoom = ['transmissao1', 'transmissao2', 'transmissao3'].includes(pathPart) ? pathPart : 'transmissao1';
         const roomLabel = currentRoom.toUpperCase().replace('TRANSMISSAO', 'TRANSMISSÃO ');
 
-        document.getElementById('waitingText').innerText = `Aguardando sinal da ${roomLabel}...`;
-        socket.emit('join-room', currentRoom);
-
-        const remoteScreen = document.getElementById('remoteScreen');
+        const remoteVideo = document.getElementById('remoteVideo');
         const waitingBox = document.getElementById('waitingBox');
+        document.getElementById('waitingText').innerText = `Aguardando sinal HD da ${roomLabel}...`;
 
-        socket.on('view-frame', (frameData) => {
-            waitingBox.style.display = 'none';
-            remoteScreen.style.display = 'block';
-            remoteScreen.src = frameData;
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+
+        let pc = null;
+
+        function entrarNaSala() {
+            socket.emit('join-room', currentRoom);
+        }
+
+        entrarNaSala();
+
+        socket.on('rooms-status', (state) => {
+            if (state[currentRoom] && remoteVideo.style.display === 'none') {
+                entrarNaSala();
+            } else if (!state[currentRoom]) {
+                if (pc) { pc.close(); pc = null; }
+                remoteVideo.style.display = 'none';
+                waitingBox.style.display = 'block';
+                document.getElementById('waitingText').innerText = `Transmissão encerrada. Aguardando sinal da ${roomLabel}...`;
+            }
+        });
+
+        socket.on('webrtc-offer', async (data) => {
+            if (pc) pc.close();
+            pc = new RTCPeerConnection(rtcConfig);
+
+            pc.ontrack = (event) => {
+                waitingBox.style.display = 'none';
+                remoteVideo.style.display = 'block';
+                remoteVideo.srcObject = event.streams[0];
+                remoteVideo.play().catch(() => {});
+            };
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('webrtc-ice-candidate', { to: data.from, candidate: event.candidate });
+                }
+            };
+
+            await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            socket.emit('webrtc-answer', { to: data.from, answer });
+        });
+
+        socket.on('webrtc-ice-candidate', async (data) => {
+            if (pc && data.candidate) {
+                await pc.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(() => {});
+            }
         });
     </script>
 </body>

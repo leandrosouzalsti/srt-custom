@@ -103,11 +103,29 @@
             transition: 0.2s;
         }
         .btn-red { background: var(--vermelho); color: var(--branco); }
-        .btn-red:hover { background: var(--vermelho-hover); }
+        .btn-red:hover:not(:disabled) { background: var(--vermelho-hover); }
+        .btn-red:disabled {
+            background: #3a1212;
+            color: #888;
+            cursor: not-allowed;
+            border: 1px solid #551a1a;
+        }
         .btn-white { background: var(--branco); color: var(--preto); }
         .btn-white:hover { background: #e0e0e0; }
         .btn-dark { background: #262626; color: var(--branco); border: 1px solid #444; }
         .btn-dark:hover { border-color: var(--vermelho); }
+
+        /* Alerta de Canal Ocupado */
+        .busy-alert {
+            display: none;
+            background: rgba(230, 0, 0, 0.15);
+            border: 1px solid var(--vermelho);
+            color: #ff6b6b;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+        }
 
         .link-box {
             display: flex;
@@ -160,14 +178,17 @@
 
     <div class="setup-box">
         <div class="row">
-            <select id="canalSelect" onchange="atualizarLinkVisualizacao()">
-                <option value="transmissao1">Canal: Transmissão 1</option>
-                <option value="transmissao2">Canal: Transmissão 2</option>
-                <option value="transmissao3">Canal: Transmissão 3</option>
+            <select id="canalSelect" onchange="atualizarInterfaceCanal()">
+                <option value="transmissao1" id="opt-transmissao1">Canal: Transmissão 1 (🟢 LIVRE)</option>
+                <option value="transmissao2" id="opt-transmissao2">Canal: Transmissão 2 (🟢 LIVRE)</option>
+                <option value="transmissao3" id="opt-transmissao3">Canal: Transmissão 3 (🟢 LIVRE)</option>
             </select>
             <input type="text" id="usuario" placeholder="Seu Nome / ID na Cidade">
             <input type="text" id="nota" placeholder="Descrição (ex: Tunagem / Orçamento)">
         </div>
+
+        <!-- Mensagem de Ocupado -->
+        <div class="busy-alert" id="busyAlert"></div>
 
         <div class="link-box">
             <span>Link do Cliente (Tela Inteira): <strong id="viewUrlText"></strong></span>
@@ -178,7 +199,7 @@
         </div>
 
         <div class="row">
-            <button class="btn-red" onclick="iniciarTransmissao()">Criar e Compartilhar Tela</button>
+            <button class="btn-red" id="btnIniciar" onclick="iniciarTransmissao()">Criar e Compartilhar Tela</button>
             <button class="btn-white" onclick="sincronizarDiscord()">Enviar Print p/ Discord</button>
         </div>
     </div>
@@ -197,21 +218,61 @@
         const statusBadge = document.getElementById('status');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        const btnIniciar = document.getElementById('btnIniciar');
+        const busyAlert = document.getElementById('busyAlert');
+
         let transmitindo = false;
         let streamInterval = null;
+        let roomsState = {
+            transmissao1: null,
+            transmissao2: null,
+            transmissao3: null
+        };
 
         function getSelectedRoom() {
             return document.getElementById('canalSelect').value;
         }
 
-        function atualizarLinkVisualizacao() {
+        function atualizarInterfaceCanal() {
             const room = getSelectedRoom();
             const fullUrl = `${window.location.origin}/${room}`;
             document.getElementById('viewUrlText').innerText = fullUrl;
             document.getElementById('abrirViewBtn').href = `/${room}`;
+
+            // Atualiza os textos das opções do select
+            ['transmissao1', 'transmissao2', 'transmissao3'].forEach((r, idx) => {
+                const opt = document.getElementById(`opt-${r}`);
+                const info = roomsState[r];
+                if (info && info.socketId !== socket.id) {
+                    opt.innerText = `Canal: Transmissão ${idx + 1} (🔴 OCUPADO - ${info.usuario})`;
+                } else if (info && info.socketId === socket.id) {
+                    opt.innerText = `Canal: Transmissão ${idx + 1} (🔴 VOCÊ ESTÁ AO VIVO)`;
+                } else {
+                    opt.innerText = `Canal: Transmissão ${idx + 1} (🟢 LIVRE)`;
+                }
+            });
+
+            // Verifica se o canal atualmente selecionado está ocupado por outra pessoa
+            const ocupante = roomsState[room];
+            if (!transmitindo && ocupante && ocupante.socketId !== socket.id) {
+                busyAlert.style.display = 'block';
+                busyAlert.innerText = `⛔ CANAL OCUPADO: "${ocupante.usuario}" já está transmitindo neste canal (${ocupante.nota}). Selecione outro canal livre acima.`;
+                btnIniciar.disabled = true;
+                btnIniciar.innerText = 'Canal Ocupado no Momento';
+            } else {
+                busyAlert.style.display = 'none';
+                btnIniciar.disabled = false;
+                btnIniciar.innerText = 'Criar e Compartilhar Tela';
+            }
         }
 
-        atualizarLinkVisualizacao();
+        // Recebe atualização em tempo real do servidor sempre que alguém entra ou sai de um canal
+        socket.on('rooms-status', (state) => {
+            roomsState = state;
+            atualizarInterfaceCanal();
+        });
+
+        atualizarInterfaceCanal();
 
         function copiarLinkCliente() {
             const url = document.getElementById('viewUrlText').innerText;
@@ -227,51 +288,55 @@
 
             const room = getSelectedRoom();
             const roomLabel = room.toUpperCase().replace('TRANSMISSAO', 'TRANSMISSÃO ');
+            const usuario = document.getElementById('usuario').value;
+            const nota = document.getElementById('nota').value;
 
-            try {
-                const stream = await navigator.mediaDevices.getDisplayMedia({
-                    video: { frameRate: 15 },
-                    audio: false
-                });
+            // Primeiro pede permissão ao servidor para reservar o canal
+            socket.emit('request-start-stream', { room, usuario, nota }, async (resposta) => {
+                if (!resposta.ok) {
+                    alert(resposta.msg);
+                    return;
+                }
 
-                localVideo.srcObject = stream;
-                localVideo.style.display = 'block';
-                placeholder.style.display = 'none';
-                statusBadge.innerText = `🔴 AO VIVO (${roomLabel})`;
-                transmitindo = true;
-                document.getElementById('canalSelect').disabled = true;
-
-                socket.emit('stream-started', {
-                    room,
-                    usuario: document.getElementById('usuario').value,
-                    nota: document.getElementById('nota').value
-                });
-
-                streamInterval = setInterval(() => {
-                    if (!transmitindo) return;
-                    canvas.width = 1280;
-                    canvas.height = 720;
-                    ctx.drawImage(localVideo, 0, 0, canvas.width, canvas.height);
-                    const frame = canvas.toDataURL('image/jpeg', 0.6);
-                    socket.emit('stream-frame', { room, frame });
-                }, 150);
-
-                stream.getVideoTracks()[0].onended = () => {
-                    transmitindo = false;
-                    clearInterval(streamInterval);
-                    localVideo.style.display = 'none';
-                    placeholder.style.display = 'block';
-                    statusBadge.innerText = '● TRANSMISSÃO ENCERRADA';
-                    document.getElementById('canalSelect').disabled = false;
-
-                    socket.emit('stream-stopped', {
-                        room,
-                        usuario: document.getElementById('usuario').value
+                // Canal reservado com sucesso, agora abre a captura de tela do navegador
+                try {
+                    const stream = await navigator.mediaDevices.getDisplayMedia({
+                        video: { frameRate: 15 },
+                        audio: false
                     });
-                };
-            } catch (err) {
-                alert('Compartilhamento cancelado.');
-            }
+
+                    localVideo.srcObject = stream;
+                    localVideo.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    statusBadge.innerText = `🔴 AO VIVO (${roomLabel})`;
+                    transmitindo = true;
+                    document.getElementById('canalSelect').disabled = true;
+
+                    streamInterval = setInterval(() => {
+                        if (!transmitindo) return;
+                        canvas.width = 1280;
+                        canvas.height = 720;
+                        ctx.drawImage(localVideo, 0, 0, canvas.width, canvas.height);
+                        const frame = canvas.toDataURL('image/jpeg', 0.6);
+                        socket.emit('stream-frame', { room, frame });
+                    }, 150);
+
+                    stream.getVideoTracks()[0].onended = () => {
+                        transmitindo = false;
+                        clearInterval(streamInterval);
+                        localVideo.style.display = 'none';
+                        placeholder.style.display = 'block';
+                        statusBadge.innerText = '● TRANSMISSÃO ENCERRADA';
+                        document.getElementById('canalSelect').disabled = false;
+
+                        socket.emit('stream-stopped', { room });
+                    };
+                } catch (err) {
+                    // Se o mecânico cancelar a janela de escolha de tela, libera o canal na hora
+                    socket.emit('stream-stopped', { room });
+                    alert('Compartilhamento cancelado. Canal liberado novamente.');
+                }
+            });
         }
 
         async function copiarImagemParaClipboard() {

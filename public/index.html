@@ -3,477 +3,371 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRT Motors Custom | Cidade Nobre</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <title>SRT Motors Custom | Central Operacional</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --preto: #080808;
-            --preto-card: #121212;
-            --preto-borda: #242424;
+            --preto: #070707;
+            --card: #121212;
+            --card-hover: #1b1b1b;
+            --borda: #262626;
             --vermelho: #e60000;
             --vermelho-hover: #ff1a1a;
             --branco: #ffffff;
-            --cinza-texto: #b5b5b5;
+            --cinza: #9e9e9e;
+            --verde: #00e676;
+            --discord: #5865F2;
         }
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Montserrat', sans-serif;
-            scroll-behavior: smooth;
         }
-        body {
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
             background-color: var(--preto);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(230, 0, 0, 0.22) 0%, rgba(7, 7, 7, 0.96) 65%),
+                url('https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
             color: var(--branco);
-            overflow-x: hidden;
-        }
-
-        /* NAVBAR */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 100;
-            background: rgba(8, 8, 8, 0.92);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--preto-borda);
-            padding: 15px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .brand {
-            font-size: 20px;
-            font-weight: 900;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            text-decoration: none;
-            color: var(--branco);
-        }
-        .brand span { color: var(--vermelho); }
-        .nav-links {
-            display: flex;
-            gap: 24px;
-            align-items: center;
-        }
-        .nav-links a {
-            color: var(--cinza-texto);
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-            transition: 0.2s;
-        }
-        .nav-links a:hover { color: var(--branco); }
-        .nav-cta {
-            background: var(--vermelho);
-            color: var(--branco) !important;
-            padding: 9px 18px;
-            border-radius: 5px;
-            font-weight: 800 !important;
-        }
-        .nav-cta:hover { background: var(--vermelho-hover); }
-
-        /* HERO BANNER */
-        .hero {
-            position: relative;
-            min-height: 90vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 120px 20px 60px;
-            background: linear-gradient(to bottom, rgba(8,8,8,0.65), rgba(8,8,8,0.98)),
-                        url('https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
-            border-bottom: 2px solid var(--vermelho);
-        }
-        .hero-content { max-width: 850px; z-index: 2; }
-        .city-pill {
-            display: inline-block;
-            background: rgba(230, 0, 0, 0.2);
-            border: 1px solid var(--vermelho);
-            padding: 6px 16px;
-            border-radius: 50px;
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 18px;
-        }
-        .hero h1 {
-            font-size: clamp(34px, 6vw, 60px);
-            font-weight: 900;
-            text-transform: uppercase;
-            line-height: 1.1;
-            margin-bottom: 18px;
-        }
-        .hero h1 span { color: var(--vermelho); }
-        .hero p {
-            font-size: 16px;
-            color: var(--cinza-texto);
-            max-width: 650px;
-            margin: 0 auto 32px;
-            line-height: 1.6;
-        }
-        .hero-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 14px;
-            justify-content: center;
-        }
-        .btn {
-            padding: 15px 28px;
-            border-radius: 6px;
-            font-weight: 800;
-            font-size: 14px;
-            text-transform: uppercase;
-            text-decoration: none;
-            letter-spacing: 1px;
-            transition: 0.25s;
-        }
-        .btn-primary {
-            background: var(--vermelho);
-            color: var(--branco);
-            box-shadow: 0 6px 25px rgba(230, 0, 0, 0.4);
-        }
-        .btn-primary:hover { background: var(--vermelho-hover); transform: translateY(-2px); }
-        .btn-outline {
-            background: rgba(255, 255, 255, 0.06);
-            color: var(--branco);
-            border: 1px solid var(--branco);
-        }
-        .btn-outline:hover { background: var(--branco); color: var(--preto); }
-
-        /* SEÇÕES */
-        section {
-            padding: 70px 5%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .sec-header {
-            text-align: center;
-            margin-bottom: 45px;
-        }
-        .sec-header span {
-            color: var(--vermelho);
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-        .sec-header h2 {
-            font-size: 30px;
-            font-weight: 900;
-            text-transform: uppercase;
-            margin-top: 6px;
-        }
-
-        /* TRANSMISSÕES */
-        .streams-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        .stream-card {
-            background: var(--preto-card);
-            border: 1px solid var(--preto-borda);
-            border-top: 3px solid var(--vermelho);
-            border-radius: 10px;
-            padding: 24px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: 0.25s;
+            padding: 18px 32px;
         }
-        .stream-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--vermelho);
+
+        /* TOPO COMPACTO */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--vermelho);
+            padding-bottom: 12px;
         }
-        .stream-card .live-tag {
-            display: inline-block;
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-icon {
+            background: var(--vermelho);
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 21px;
+            box-shadow: 0 0 15px rgba(230, 0, 0, 0.5);
+        }
+        .logo-text h1 {
+            font-size: 21px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .logo-text h1 span { color: var(--vermelho); }
+        .logo-text p {
+            font-size: 11px;
+            color: var(--cinza);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .city-badge {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid #333;
+            padding: 8px 16px;
+            border-radius: 50px;
             font-size: 11px;
             font-weight: 800;
-            color: var(--vermelho);
             text-transform: uppercase;
-            margin-bottom: 10px;
+            letter-spacing: 1px;
         }
-        .stream-card h3 { font-size: 20px; font-weight: 900; margin-bottom: 8px; }
-        .stream-card p { font-size: 13px; color: var(--cinza-texto); margin-bottom: 20px; line-height: 1.5; }
-        .stream-card a {
-            text-align: center;
-            background: #1f1f1f;
-            color: var(--branco);
-            text-decoration: none;
-            padding: 12px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 13px;
-            text-transform: uppercase;
-            transition: 0.2s;
-        }
-        .stream-card a:hover { background: var(--vermelho); }
-        .stream-card.creator {
-            background: linear-gradient(145deg, #1f0505, #121212);
-            border-color: var(--vermelho);
-        }
-        .stream-card.creator a { background: var(--vermelho); }
-        .stream-card.creator a:hover { background: var(--vermelho-hover); }
 
-        /* VÍDEO */
-        .video-wrapper {
-            background: var(--preto-card);
-            border: 2px solid var(--preto-borda);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%;
-            height: 0;
-        }
-        .video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
-        }
-        .video-caption {
-            padding: 18px 24px;
+        /* CONTEÚDO CENTRAL EM 2 LINHAS DE 4 CARTÕES */
+        main {
+            flex: 1;
             display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            border-top: 1px solid var(--preto-borda);
-        }
-        .video-caption h4 { font-size: 16px; font-weight: 800; }
-        .video-caption span { font-size: 13px; color: var(--cinza-texto); }
-
-        /* GALERIA */
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 18px;
-        }
-        .gallery-item {
-            position: relative;
-            border-radius: 10px;
-            overflow: hidden;
-            aspect-ratio: 16 / 10;
-            border: 1px solid var(--preto-borda);
-        }
-        .gallery-item img {
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1260px;
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.4s ease;
-        }
-        .gallery-item:hover img { transform: scale(1.06); }
-        .gallery-overlay {
-            position: absolute;
-            bottom: 0;
-            inset-inline: 0;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
-            padding: 16px;
-            font-size: 13px;
-            font-weight: 700;
+            margin: 0 auto;
         }
 
-        /* DISCORD */
-        .discord-grid {
+        .row-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--cinza);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .grid-4 {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 16px;
         }
-        .discord-btn {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--preto-card);
-            border: 1px solid var(--preto-borda);
-            border-left: 4px solid var(--branco);
-            padding: 18px 22px;
-            border-radius: 8px;
+
+        .card {
+            background: rgba(18, 18, 18, 0.92);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--borda);
+            border-radius: 10px;
+            padding: 20px;
             text-decoration: none;
             color: var(--branco);
-            font-weight: 700;
-            font-size: 14px;
-            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 145px;
+            transition: all 0.2s ease;
         }
-        .discord-btn:hover {
-            border-left-color: var(--vermelho);
-            background: #1a1a1a;
-            transform: translateX(4px);
-        }
-        .discord-btn span {
-            background: var(--vermelho);
-            font-size: 11px;
-            padding: 4px 10px;
-            border-radius: 4px;
-            text-transform: uppercase;
+        .card:hover {
+            transform: translateY(-3px);
+            background: var(--card-hover);
+            border-color: var(--vermelho);
+            box-shadow: 0 8px 24px rgba(230, 0, 0, 0.2);
         }
 
+        .card.primary {
+            background: linear-gradient(145deg, #2b0000, #121212);
+            border: 1px solid var(--vermelho);
+        }
+        .card.discord-card {
+            background: linear-gradient(145deg, #161936, #121212);
+            border: 1px solid var(--discord);
+        }
+        .card.discord-card:hover {
+            border-color: #7983f5;
+            box-shadow: 0 8px 24px rgba(88, 101, 242, 0.25);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .emoji-box {
+            font-size: 24px;
+            background: rgba(255, 255, 255, 0.06);
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card.primary .emoji-box { background: var(--vermelho); }
+        .card.discord-card .emoji-box { background: var(--discord); }
+
+        .badge {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 9px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            background: #222;
+            color: #ccc;
+        }
+        .badge.livre {
+            background: rgba(0, 230, 118, 0.12);
+            color: var(--verde);
+            border: 1px solid rgba(0, 230, 118, 0.35);
+        }
+        .badge.ocupado {
+            background: rgba(230, 0, 0, 0.2);
+            color: #ff5252;
+            border: 1px solid var(--vermelho);
+        }
+
+        .card h3 {
+            font-size: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .card p {
+            font-size: 12px;
+            color: var(--cinza);
+            line-height: 1.4;
+        }
+
+        /* RODAPÉ COMPACTO */
         footer {
-            background: #050505;
-            border-top: 1px solid var(--preto-borda);
-            text-align: center;
-            padding: 30px 20px;
-            font-size: 13px;
-            color: #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--borda);
+            padding-top: 10px;
+            font-size: 11px;
+            color: #777;
         }
         footer strong { color: var(--branco); }
 
-        @media (max-width: 768px) {
-            .nav-links a:not(.nav-cta) { display: none; }
+        @media (max-width: 960px) {
+            html, body { height: auto; overflow-y: auto; }
+            .grid-4 { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <nav>
-        <a href="index.html" class="brand">SRT MOTORS <span>CUSTOM</span></a>
-        <div class="nav-links">
-            <a href="#transmissoes">Transmissões</a>
-            <a href="#video">Destaque RP</a>
-            <a href="#galeria">Projetos</a>
-            <a href="#discord">Discord</a>
-            <a href="painel.html" class="nav-cta">Criar Transmissão</a>
-        </div>
-    </nav>
-
-    <header class="hero">
-        <div class="hero-content">
-            <div class="city-pill">Oficina Oficial • Cidade Nobre GTA RP</div>
-            <h1>PERFORMANCE, ESTÉTICA & <span>CUSTOMIZAÇÃO</span></h1>
-            <p>Acompanhe a tunagem e manutenção do seu veículo em tempo real pelos nossos canais de transmissão ao vivo sincronizados com o Discord da oficina.</p>
-            <div class="hero-buttons">
-                <a href="painel.html" class="btn btn-primary">Criar Transmissão</a>
-                <a href="#transmissoes" class="btn btn-outline">Assistir Ao Vivo</a>
-                <a href="#discord" class="btn btn-outline">Canais Discord</a>
+    <!-- TOPO -->
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon">🏎️</div>
+            <div class="logo-text">
+                <h1>SRT MOTORS <span>CUSTOM</span></h1>
+                <p>Cidade Nobre • Central Operacional</p>
             </div>
         </div>
+        <div class="city-badge">🔧 Oficina Oficial • 24H</div>
     </header>
 
-    <section id="transmissoes">
-        <div class="sec-header">
-            <span>Acompanhamento em Tempo Real</span>
-            <h2>Central de Transmissões</h2>
-        </div>
+    <!-- PAINEL PRINCIPAL SEM ROLAGEM -->
+    <main>
+        <!-- LINHA 1: TRANSMISSÕES -->
+        <div>
+            <div class="row-label">📡 Sistema de Transmissão Ao Vivo & Telões</div>
+            <div class="grid-4">
+                <a href="painel.html" class="card primary">
+                    <div class="card-top">
+                        <div class="emoji-box">🎥</div>
+                        <span class="badge" style="background:var(--vermelho); color:#fff;">Mecânicos</span>
+                    </div>
+                    <div>
+                        <h3>Criar Transmissão</h3>
+                        <p>Iniciar compartilhamento de tela e enviar print ao Discord.</p>
+                    </div>
+                </a>
 
-        <div class="streams-grid">
-            <div class="stream-card creator">
-                <div>
-                    <span class="live-tag">● Área do Mecânico</span>
-                    <h3>Criar Transmissão</h3>
-                    <p>Acesse o painel de controle para iniciar o compartilhamento de tela, copiar o link em tela cheia e enviar prints ao Discord.</p>
-                </div>
-                <a href="painel.html">Abrir Painel de Criação</a>
-            </div>
+                <a href="/transmissao1" class="card">
+                    <div class="card-top">
+                        <div class="emoji-box">🖥️</div>
+                        <span class="badge livre" id="status-transmissao1">🟢 Livre</span>
+                    </div>
+                    <div>
+                        <h3>Transmissão 01</h3>
+                        <p id="desc-transmissao1">Assistir canal 01 em tela cheia limpa.</p>
+                    </div>
+                </a>
 
-            <div class="stream-card">
-                <div>
-                    <span class="live-tag">● Tela Inteira • Canal 01</span>
-                    <h3>Transmissão 01</h3>
-                    <p>Visualização limpa em tela inteira do primeiro elevador de tunagem e diagnóstico da SRT Motors Custom.</p>
-                </div>
-                <a href="/transmissao1">Assistir Transmissão 01</a>
-            </div>
+                <a href="/transmissao2" class="card">
+                    <div class="card-top">
+                        <div class="emoji-box">🖥️</div>
+                        <span class="badge livre" id="status-transmissao2">🟢 Livre</span>
+                    </div>
+                    <div>
+                        <h3>Transmissão 02</h3>
+                        <p id="desc-transmissao2">Assistir canal 02 em tela cheia limpa.</p>
+                    </div>
+                </a>
 
-            <div class="stream-card">
-                <div>
-                    <span class="live-tag">● Tela Inteira • Canal 02</span>
-                    <h3>Transmissão 02</h3>
-                    <p>Visualização limpa em tela inteira do segundo elevador de performance, pintura e estética automotiva.</p>
-                </div>
-                <a href="/transmissao2">Assistir Transmissão 02</a>
-            </div>
-
-            <div class="stream-card">
-                <div>
-                    <span class="live-tag">● Tela Inteira • Canal 03</span>
-                    <h3>Transmissão 03</h3>
-                    <p>Visualização limpa em tela inteira da terceira bancada de atendimento VIP e projetos especiais.</p>
-                </div>
-                <a href="/transmissao3">Assistir Transmissão 03</a>
-            </div>
-        </div>
-    </section>
-
-    <section id="video">
-        <div class="sec-header">
-            <span>Dentro da Cidade Nobre</span>
-            <h2>SRT Motors em Ação</h2>
-        </div>
-
-        <div class="video-wrapper">
-            <div class="video-container">
-                <iframe 
-                    src="https://www.youtube.com/embed/QkkoHAzjnUs?autoplay=0&rel=0&showinfo=0" 
-                    title="SRT Motors Custom GTA RP" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
-            </div>
-            <div class="video-caption">
-                <h4>Projetos Exclusivos & Encontros Automotivos — Cidade Nobre</h4>
-                <span>Atendimento especializado 24h • Garagem SRT</span>
+                <a href="/transmissao3" class="card">
+                    <div class="card-top">
+                        <div class="emoji-box">🖥️</div>
+                        <span class="badge livre" id="status-transmissao3">🟢 Livre</span>
+                    </div>
+                    <div>
+                        <h3>Transmissão 03</h3>
+                        <p id="desc-transmissao3">Assistir canal 03 em tela cheia limpa.</p>
+                    </div>
+                </a>
             </div>
         </div>
-    </section>
 
-    <section id="galeria">
-        <div class="sec-header">
-            <span>Vitrine SRT</span>
-            <h2>Projetos Entregues</h2>
-        </div>
+        <!-- LINHA 2: CURSOS, RECRUTAMENTO, GUIA E SERVIDOR DISCORD -->
+        <div>
+            <div class="row-label">🛠️ Gestão Interna, Manual & Comunidade</div>
+            <div class="grid-4">
+                <a href="cursos.html" class="card">
+                    <div class="card-top">
+                        <div class="emoji-box">🎓</div>
+                        <span class="badge">Academia SRT</span>
+                    </div>
+                    <div>
+                        <h3>Aplicação de Cursos</h3>
+                        <p>Lançar avaliações práticas e teóricas com registro no Discord.</p>
+                    </div>
+                </a>
 
-        <div class="gallery-grid">
-            <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&w=900&q=80" alt="Projeto Esportivo SRT">
-                <div class="gallery-overlay">Stage 4 • Preparação de Pista</div>
+                <a href="recrutamento.html" class="card">
+                    <div class="card-top">
+                        <div class="emoji-box">📋</div>
+                        <span class="badge">RH & Financeiro</span>
+                    </div>
+                    <div>
+                        <h3>Recrutamento</h3>
+                        <p>Lançar novos iniciantes na fila de Aguardando Pagamento.</p>
+                    </div>
+                </a>
+
+                <a href="guia.html" class="card">
+                    <div class="card-top">
+                        <div class="emoji-box">📖</div>
+                        <span class="badge">Manual Oficial</span>
+                    </div>
+                    <div>
+                        <h3>Guia do Mecânico</h3>
+                        <p>Regras da oficina, conduta, atendimento, tunagem e guincho.</p>
+                    </div>
+                </a>
+
+                <!-- ACESSO ÚNICO PARA A PÁGINA COM TODOS OS CANAIS DO DISCORD -->
+                <a href="discord.html" class="card discord-card">
+                    <div class="card-top">
+                        <div class="emoji-box">💬</div>
+                        <span class="badge" style="background:var(--discord); color:#fff;">Canais</span>
+                    </div>
+                    <div>
+                        <h3>Servidor Discord</h3>
+                        <p>Acessar o servidor e todos os canais oficiais da mecânica.</p>
+                    </div>
+                </a>
             </div>
-            <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=900&q=80" alt="Customização Vermelha SRT">
-                <div class="gallery-overlay">Pintura Exclusiva • Linha Red Edition</div>
-            </div>
-            <div class="gallery-item">
-                <img src="https://images.unsplash.com/photo-1614200187524-dc4b892acf16?auto=format&fit=crop&w=900&q=80" alt="Oficina Noturna SRT">
-                <div class="gallery-overlay">Estética Automotiva & Rodas Forjadas</div>
-            </div>
         </div>
-    </section>
+    </main>
 
-    <section id="discord">
-        <div class="sec-header">
-            <span>Comunidade & Atendimento</span>
-            <h2>Canais Oficiais do Discord</h2>
-        </div>
-
-        <div class="discord-grid">
-            <a href="https://discord.gg/SEU_CONVITE" target="_blank" class="discord-btn">
-                <div>Discord SRT Motors Custom</div>
-                <span>Entrar</span>
-            </a>
-            <a href="https://discord.gg/SEU_CONVITE" target="_blank" class="discord-btn">
-                <div>Tabela de Preços & Orçamentos</div>
-                <span>Abrir Canal</span>
-            </a>
-            <a href="https://discord.gg/SEU_CONVITE" target="_blank" class="discord-btn">
-                <div>Logs de Transmissão & Prints</div>
-                <span>Sincronizado</span>
-            </a>
-            <a href="https://discord.gg/SEU_CONVITE" target="_blank" class="discord-btn">
-                <div>Discord Oficial Cidade Nobre</div>
-                <span>Cidade</span>
-            </a>
-        </div>
-    </section>
-
+    <!-- RODAPÉ -->
     <footer>
-        <p><strong>SRT MOTORS CUSTOM</strong> • Cidade Nobre GTA RP &copy; 2026</p>
+        <span><strong>SRT MOTORS CUSTOM</strong> • Performance & Estética Automotiva</span>
+        <span>Sincronizado em tempo real com Discord • 2026</span>
     </footer>
+
+    <script>
+        const socket = io();
+        socket.on('rooms-status', (state) => {
+            ['transmissao1', 'transmissao2', 'transmissao3'].forEach((room) => {
+                const badge = document.getElementById(`status-${room}`);
+                const desc = document.getElementById(`desc-${room}`);
+                const info = state[room];
+
+                if (info) {
+                    badge.className = 'badge ocupado';
+                    badge.innerText = '🔴 Ao Vivo';
+                    desc.innerText = `Em uso por: ${info.usuario} (${info.nota})`;
+                } else {
+                    badge.className = 'badge livre';
+                    badge.innerText = '🟢 Livre';
+                    desc.innerText = 'Disponível • Assistir em tela cheia limpa.';
+                }
+            });
+        });
+    </script>
 
 </body>
 </html>
