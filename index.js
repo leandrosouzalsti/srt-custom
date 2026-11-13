@@ -9,7 +9,7 @@ const io = new Server(server, { maxHttpBufferSize: 1e7 });
 
 // WEBHOOK DISCORD CONFIGURADO
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1570787328627187845/Zc0rMg7oNb7RMjqjsa8eoDnvg4loKjfluJmoTVW2qdKGmMwkRpRIN2acAKMot3ql9uAZ";
-const BASE_URL = "https://srt-motors-share.onrender.com";
+const BASE_URL = "https://srt-custom.onrender.com";
 
 app.use(express.static(path.join(__dirname, 'public')));
 
