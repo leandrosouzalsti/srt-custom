@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRT Motors Custom | Ao Vivo</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            background-color: #000000;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        img#remoteScreen {
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain;
+            display: none;
+        }
+        .waiting {
+            color: #ffffff;
+            text-align: center;
+        }
+        .waiting h2 {
+            font-size: 20px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .waiting h2 span { color: #e60000; }
+        .waiting p { color: #777; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="waiting" id="waitingBox">
+        <h2>SRT MOTORS <span>CUSTOM</span></h2>
+        <p id="waitingText">Aguardando transmissão ao vivo...</p>
+    </div>
+
+    <img id="remoteScreen" alt="Transmissão ao vivo" />
+
+    <script>
+        const socket = io();
+        const pathPart = window.location.pathname.replace('/', '').toLowerCase();
+        const currentRoom = ['transmissao1', 'transmissao2', 'transmissao3'].includes(pathPart) ? pathPart : 'transmissao1';
+        const roomLabel = currentRoom.toUpperCase().replace('TRANSMISSAO', 'TRANSMISSÃO ');
+
+        document.getElementById('waitingText').innerText = `Aguardando sinal da ${roomLabel}...`;
+        socket.emit('join-room', currentRoom);
+
+        const remoteScreen = document.getElementById('remoteScreen');
+        const waitingBox = document.getElementById('waitingBox');
+
+        socket.on('view-frame', (frameData) => {
+            waitingBox.style.display = 'none';
+            remoteScreen.style.display = 'block';
+            remoteScreen.src = frameData;
+        });
+    </script>
+</body>
+</html>

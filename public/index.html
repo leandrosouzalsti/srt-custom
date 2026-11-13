@@ -3,287 +3,477 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRT Motors Custom | Share Multi-Box</title>
-    <script src="/socket.io/socket.io.js"></script>
+    <title>SRT Motors Custom | Cidade Nobre</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --preto: #0a0a0a;
-            --cinza-card: #141414;
+            --preto: #080808;
+            --preto-card: #121212;
+            --preto-borda: #242424;
             --vermelho: #e60000;
             --vermelho-hover: #ff1a1a;
             --branco: #ffffff;
+            --cinza-texto: #b5b5b5;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+            scroll-behavior: smooth;
+        }
         body {
             background-color: var(--preto);
-            background-image: radial-gradient(circle at top, #240000 0%, #0a0a0a 65%);
             color: var(--branco);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 25px;
-            min-height: 100vh;
-        }
-        header {
-            width: 100%;
-            max-width: 980px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--vermelho);
-            padding-bottom: 15px;
-            margin-bottom: 18px;
-        }
-        header h1 { font-size: 22px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 900; }
-        header h1 span { color: var(--vermelho); }
-        
-        /* Navegação entre as 3 telas */
-        .box-tabs {
-            width: 100%;
-            max-width: 980px;
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .tab-btn {
-            flex: 1;
-            text-align: center;
-            text-decoration: none;
-            background: var(--cinza-card);
-            color: #aaa;
-            border: 1px solid #2a2a2a;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 13px;
-            letter-spacing: 1px;
-            transition: 0.2s;
-        }
-        .tab-btn:hover { border-color: var(--vermelho); color: var(--branco); }
-        .tab-btn.active {
-            background: var(--vermelho);
-            color: var(--branco);
-            border-color: var(--vermelho);
+            overflow-x: hidden;
         }
 
-        .status-badge {
-            background: var(--cinza-card);
-            border: 1px solid var(--vermelho);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .controls {
+        /* NAVBAR */
+        nav {
+            position: fixed;
+            top: 0;
             width: 100%;
-            max-width: 980px;
-            background: var(--cinza-card);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #262626;
+            z-index: 100;
+            background: rgba(8, 8, 8, 0.92);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--preto-borda);
+            padding: 15px 5%;
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
+            justify-content: space-between;
+            align-items: center;
         }
-        input {
-            flex: 1;
-            min-width: 180px;
-            padding: 11px 14px;
-            border-radius: 6px;
-            border: 1px solid #333;
-            background: var(--preto);
-            color: var(--branco);
-            outline: none;
-        }
-        input:focus { border-color: var(--vermelho); }
-        button {
-            padding: 11px 18px;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
+        .brand {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
+            text-decoration: none;
+            color: var(--branco);
+        }
+        .brand span { color: var(--vermelho); }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: var(--cinza-texto);
+            text-decoration: none;
             font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
             transition: 0.2s;
         }
-        .btn-red { background: var(--vermelho); color: var(--branco); }
-        .btn-red:hover { background: var(--vermelho-hover); }
-        .btn-white { background: var(--branco); color: var(--preto); }
-        .btn-white:hover { background: #e0e0e0; }
-        .btn-dark { background: #262626; color: var(--branco); border: 1px solid #444; }
-        .btn-dark:hover { border-color: var(--vermelho); }
-        .screen-box {
-            width: 100%;
-            max-width: 980px;
-            aspect-ratio: 16 / 9;
-            background: #050505;
-            border: 2px solid var(--vermelho);
-            border-radius: 8px;
-            overflow: hidden;
+        .nav-links a:hover { color: var(--branco); }
+        .nav-cta {
+            background: var(--vermelho);
+            color: var(--branco) !important;
+            padding: 9px 18px;
+            border-radius: 5px;
+            font-weight: 800 !important;
+        }
+        .nav-cta:hover { background: var(--vermelho-hover); }
+
+        /* HERO BANNER */
+        .hero {
+            position: relative;
+            min-height: 90vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 25px rgba(230, 0, 0, 0.25);
+            text-align: center;
+            padding: 120px 20px 60px;
+            background: linear-gradient(to bottom, rgba(8,8,8,0.65), rgba(8,8,8,0.98)),
+                        url('https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+            border-bottom: 2px solid var(--vermelho);
         }
-        video, img#remoteScreen {
+        .hero-content { max-width: 850px; z-index: 2; }
+        .city-pill {
+            display: inline-block;
+            background: rgba(230, 0, 0, 0.2);
+            border: 1px solid var(--vermelho);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+        .hero h1 {
+            font-size: clamp(34px, 6vw, 60px);
+            font-weight: 900;
+            text-transform: uppercase;
+            line-height: 1.1;
+            margin-bottom: 18px;
+        }
+        .hero h1 span { color: var(--vermelho); }
+        .hero p {
+            font-size: 16px;
+            color: var(--cinza-texto);
+            max-width: 650px;
+            margin: 0 auto 32px;
+            line-height: 1.6;
+        }
+        .hero-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            justify-content: center;
+        }
+        .btn {
+            padding: 15px 28px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 14px;
+            text-transform: uppercase;
+            text-decoration: none;
+            letter-spacing: 1px;
+            transition: 0.25s;
+        }
+        .btn-primary {
+            background: var(--vermelho);
+            color: var(--branco);
+            box-shadow: 0 6px 25px rgba(230, 0, 0, 0.4);
+        }
+        .btn-primary:hover { background: var(--vermelho-hover); transform: translateY(-2px); }
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--branco);
+            border: 1px solid var(--branco);
+        }
+        .btn-outline:hover { background: var(--branco); color: var(--preto); }
+
+        /* SEÇÕES */
+        section {
+            padding: 70px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .sec-header {
+            text-align: center;
+            margin-bottom: 45px;
+        }
+        .sec-header span {
+            color: var(--vermelho);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .sec-header h2 {
+            font-size: 30px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+
+        /* TRANSMISSÕES */
+        .streams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .stream-card {
+            background: var(--preto-card);
+            border: 1px solid var(--preto-borda);
+            border-top: 3px solid var(--vermelho);
+            border-radius: 10px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: 0.25s;
+        }
+        .stream-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--vermelho);
+        }
+        .stream-card .live-tag {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--vermelho);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .stream-card h3 { font-size: 20px; font-weight: 900; margin-bottom: 8px; }
+        .stream-card p { font-size: 13px; color: var(--cinza-texto); margin-bottom: 20px; line-height: 1.5; }
+        .stream-card a {
+            text-align: center;
+            background: #1f1f1f;
+            color: var(--branco);
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+        .stream-card a:hover { background: var(--vermelho); }
+        .stream-card.creator {
+            background: linear-gradient(145deg, #1f0505, #121212);
+            border-color: var(--vermelho);
+        }
+        .stream-card.creator a { background: var(--vermelho); }
+        .stream-card.creator a:hover { background: var(--vermelho-hover); }
+
+        /* VÍDEO */
+        .video-wrapper {
+            background: var(--preto-card);
+            border: 2px solid var(--preto-borda);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            border: 0;
         }
-        .placeholder-text { color: #777; font-size: 15px; }
+        .video-caption {
+            padding: 18px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid var(--preto-borda);
+        }
+        .video-caption h4 { font-size: 16px; font-weight: 800; }
+        .video-caption span { font-size: 13px; color: var(--cinza-texto); }
+
+        /* GALERIA */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 18px;
+        }
+        .gallery-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            aspect-ratio: 16 / 10;
+            border: 1px solid var(--preto-borda);
+        }
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .gallery-item:hover img { transform: scale(1.06); }
+        .gallery-overlay {
+            position: absolute;
+            bottom: 0;
+            inset-inline: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+            padding: 16px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        /* DISCORD */
+        .discord-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .discord-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--preto-card);
+            border: 1px solid var(--preto-borda);
+            border-left: 4px solid var(--branco);
+            padding: 18px 22px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--branco);
+            font-weight: 700;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .discord-btn:hover {
+            border-left-color: var(--vermelho);
+            background: #1a1a1a;
+            transform: translateX(4px);
+        }
+        .discord-btn span {
+            background: var(--vermelho);
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        footer {
+            background: #050505;
+            border-top: 1px solid var(--preto-borda);
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 13px;
+            color: #666;
+        }
+        footer strong { color: var(--branco); }
+
+        @media (max-width: 768px) {
+            .nav-links a:not(.nav-cta) { display: none; }
+        }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>SRT MOTORS <span>CUSTOM</span> • <span id="roomTitle">BOX 1</span></h1>
-        <div class="status-badge" id="status">● AGUARDANDO TRANSMISSÃO</div>
+    <nav>
+        <a href="/index.html" class="brand">SRT MOTORS <span>CUSTOM</span></a>
+        <div class="nav-links">
+            <a href="#transmissoes">Transmissões</a>
+            <a href="#video">Destaque RP</a>
+            <a href="#galeria">Projetos</a>
+            <a href="#discord">Discord</a>
+            <a href="/painel.html" class="nav-cta">Criar Transmissão</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <div class="city-pill">Oficina Oficial • Cidade Nobre GTA RP</div>
+            <h1>PERFORMANCE, ESTÉTICA & <span>CUSTOMIZAÇÃO</span></h1>
+            <p>Acompanhe a tunagem e manutenção do seu veículo em tempo real pelos nossos canais de transmissão ao vivo sincronizados com o Discord da oficina.</p>
+            <div class="hero-buttons">
+                <a href="/painel.html" class="btn btn-primary">Criar Transmissão</a>
+                <a href="#transmissoes" class="btn btn-outline">Assistir Ao Vivo</a>
+                <a href="#discord" class="btn btn-outline">Canais Discord</a>
+            </div>
+        </div>
     </header>
 
-    <div class="box-tabs">
-        <a href="/box1" class="tab-btn" id="tab-box1">TELA 01 (BOX 1)</a>
-        <a href="/box2" class="tab-btn" id="tab-box2">TELA 02 (BOX 2)</a>
-        <a href="/box3" class="tab-btn" id="tab-box3">TELA 03 (BOX 3)</a>
-    </div>
+    <section id="transmissoes">
+        <div class="sec-header">
+            <span>Acompanhamento em Tempo Real</span>
+            <h2>Central de Transmissões</h2>
+        </div>
 
-    <div class="controls">
-        <input type="text" id="usuario" placeholder="Seu Nome / ID na Cidade">
-        <input type="text" id="nota" placeholder="Descrição (ex: Tunagem / Orçamento)">
-        <button class="btn-red" onclick="iniciarCompartilhamento()">Compartilhar Tela</button>
-        <button class="btn-white" onclick="sincronizarDiscord()">Enviar Print p/ Discord</button>
-        <button class="btn-dark" onclick="copiarLink()">Copiar Link deste Box</button>
-    </div>
+        <div class="streams-grid">
+            <div class="stream-card creator">
+                <div>
+                    <span class="live-tag">● Área do Mecânico</span>
+                    <h3>Criar Transmissão</h3>
+                    <p>Acesse o painel de controle para iniciar o compartilhamento de tela, copiar o link em tela cheia e enviar prints ao Discord.</p>
+                </div>
+                <a href="/painel.html">Abrir Painel de Criação</a>
+            </div>
 
-    <div class="screen-box">
-        <span class="placeholder-text" id="placeholder">Nenhuma tela sendo transmitida neste Box no momento</span>
-        <video id="localVideo" autoplay muted style="display:none;"></video>
-        <img id="remoteScreen" style="display:none;" />
-    </div>
+            <div class="stream-card">
+                <div>
+                    <span class="live-tag">● Tela Inteira • Canal 01</span>
+                    <h3>Transmissão 01</h3>
+                    <p>Visualização limpa em tela inteira do primeiro elevador de tunagem e diagnóstico da SRT Motors Custom.</p>
+                </div>
+                <a href="/transmissao1">Assistir Transmissão 01</a>
+            </div>
 
-    <canvas id="canvas" style="display:none;"></canvas>
+            <div class="stream-card">
+                <div>
+                    <span class="live-tag">● Tela Inteira • Canal 02</span>
+                    <h3>Transmissão 02</h3>
+                    <p>Visualização limpa em tela inteira do segundo elevador de performance, pintura e estética automotiva.</p>
+                </div>
+                <a href="/transmissao2">Assistir Transmissão 02</a>
+            </div>
 
-    <script>
-        const socket = io();
-        const pathPart = window.location.pathname.replace('/', '').toLowerCase();
-        const currentRoom = ['box1', 'box2', 'box3'].includes(pathPart) ? pathPart : 'box1';
+            <div class="stream-card">
+                <div>
+                    <span class="live-tag">● Tela Inteira • Canal 03</span>
+                    <h3>Transmissão 03</h3>
+                    <p>Visualização limpa em tela inteira da terceira bancada de atendimento VIP e projetos especiais.</p>
+                </div>
+                <a href="/transmissao3">Assistir Transmissão 03</a>
+            </div>
+        </div>
+    </section>
 
-        // Atualiza visual da aba ativa
-        document.getElementById(`tab-${currentRoom}`).classList.add('active');
-        document.getElementById('roomTitle').innerText = currentRoom.toUpperCase().replace('BOX', 'BOX ');
+    <section id="video">
+        <div class="sec-header">
+            <span>Dentro da Cidade Nobre</span>
+            <h2>SRT Motors em Ação</h2>
+        </div>
 
-        // Conecta na sala correspondente
-        socket.emit('join-room', currentRoom);
+        <div class="video-wrapper">
+            <div class="video-container">
+                <iframe 
+                    src="https://www.youtube.com/embed/QkkoHAzjnUs?autoplay=0&rel=0&showinfo=0" 
+                    title="SRT Motors Custom GTA RP" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+            <div class="video-caption">
+                <h4>Projetos Exclusivos & Encontros Automotivos — Cidade Nobre</h4>
+                <span>Atendimento especializado 24h • Garagem SRT</span>
+            </div>
+        </div>
+    </section>
 
-        const localVideo = document.getElementById('localVideo');
-        const remoteScreen = document.getElementById('remoteScreen');
-        const placeholder = document.getElementById('placeholder');
-        const statusBadge = document.getElementById('status');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let transmitindo = false;
-        let streamInterval = null;
+    <section id="galeria">
+        <div class="sec-header">
+            <span>Vitrine SRT</span>
+            <h2>Projetos Entregues</h2>
+        </div>
 
-        async function iniciarCompartilhamento() {
-            try {
-                const stream = await navigator.mediaDevices.getDisplayMedia({
-                    video: { frameRate: 15 },
-                    audio: false
-                });
-                localVideo.srcObject = stream;
-                localVideo.style.display = 'block';
-                remoteScreen.style.display = 'none';
-                placeholder.style.display = 'none';
-                statusBadge.innerText = `🔴 TRANSMITINDO (${currentRoom.toUpperCase()})`;
-                transmitindo = true;
+        <div class="gallery-grid">
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&w=900&q=80" alt="Projeto Esportivo SRT">
+                <div class="gallery-overlay">Stage 4 • Preparação de Pista</div>
+            </div>
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=900&q=80" alt="Customização Vermelha SRT">
+                <div class="gallery-overlay">Pintura Exclusiva • Linha Red Edition</div>
+            </div>
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1614200187524-dc4b892acf16?auto=format&fit=crop&w=900&q=80" alt="Oficina Noturna SRT">
+                <div class="gallery-overlay">Estética Automotiva & Rodas Forjadas</div>
+            </div>
+        </div>
+    </section>
 
-                socket.emit('stream-started', {
-                    room: currentRoom,
-                    usuario: document.getElementById('usuario').value,
-                    nota: document.getElementById('nota').value
-                });
+    <section id="discord">
+        <div class="sec-header">
+            <span>Comunidade & Atendimento</span>
+            <h2>Canais Oficiais do Discord</h2>
+        </div>
 
-                streamInterval = setInterval(() => {
-                    if (!transmitindo) return;
-                    canvas.width = 1280;
-                    canvas.height = 720;
-                    ctx.drawImage(localVideo, 0, 0, canvas.width, canvas.height);
-                    const frame = canvas.toDataURL('image/jpeg', 0.6);
-                    socket.emit('stream-frame', { room: currentRoom, frame });
-                }, 150);
+        <div class="discord-grid">
+            <a href="https://discord.gg/SEU_CONVITE" target="_blank" class="discord-btn">
+                <div>Discord SRT Motors Custom</div>
+                <span>Entrar</span>
+            </a>
+            <a href="https://discord.gg/SEU_CONVITE" target="_blank" class="discord-btn">
+                <div>Tabela de Preços & Orçamentos</div>
+                <span>Abrir Canal</span>
+            </a>
+            <a href="https://discord.gg/SEU_CONVITE" target="_blank" class="discord-btn">
+                <div>Logs de Transmissão & Prints</div>
+                <span>Sincronizado</span>
+            </a>
+            <a href="https://discord.gg/SEU_CONVITE" target="_blank" class="discord-btn">
+                <div>Discord Oficial Cidade Nobre</div>
+                <span>Cidade</span>
+            </a>
+        </div>
+    </section>
 
-                stream.getVideoTracks()[0].onended = () => {
-                    transmitindo = false;
-                    clearInterval(streamInterval);
-                    localVideo.style.display = 'none';
-                    placeholder.style.display = 'block';
-                    statusBadge.innerText = '● TRANSMISSÃO ENCERRADA';
+    <footer>
+        <p><strong>SRT MOTORS CUSTOM</strong> • Cidade Nobre GTA RP &copy; 2026</p>
+    </footer>
 
-                    socket.emit('stream-stopped', {
-                        room: currentRoom,
-                        usuario: document.getElementById('usuario').value
-                    });
-                };
-            } catch (err) {
-                alert('Permissão de captura de tela cancelada ou negada.');
-            }
-        }
-
-        socket.on('view-frame', (frameData) => {
-            if (transmitindo) return;
-            placeholder.style.display = 'none';
-            localVideo.style.display = 'none';
-            remoteScreen.style.display = 'block';
-            remoteScreen.src = frameData;
-            statusBadge.innerText = `🔴 ASSISTINDO (${currentRoom.toUpperCase()})`;
-        });
-
-        async function copiarImagemParaClipboard() {
-            canvas.toBlob(async (blob) => {
-                try {
-                    await navigator.clipboard.write([
-                        new ClipboardItem({ 'image/png': blob })
-                    ]);
-                } catch (e) {
-                    console.error('Erro ao copiar imagem:', e);
-                }
-            }, 'image/png');
-        }
-
-        function sincronizarDiscord() {
-            if (!transmitindo && remoteScreen.style.display === 'none') {
-                alert('Inicie o compartilhamento de tela primeiro.');
-                return;
-            }
-            canvas.width = 1280;
-            canvas.height = 720;
-            if (transmitindo) {
-                ctx.drawImage(localVideo, 0, 0, canvas.width, canvas.height);
-            } else {
-                ctx.drawImage(remoteScreen, 0, 0, canvas.width, canvas.height);
-            }
-            const image = canvas.toDataURL('image/png');
-            socket.emit('sync-webhook', {
-                room: currentRoom,
-                image,
-                usuario: document.getElementById('usuario').value,
-                nota: document.getElementById('nota').value
-            });
-        }
-
-        function copiarLink() {
-            navigator.clipboard.writeText(window.location.href);
-            alert(`Link do ${currentRoom.toUpperCase().replace('BOX', 'BOX ')} copiado!`);
-        }
-
-        socket.on('sync-status', async (res) => {
-            if (res.fallback) {
-                await copiarImagemParaClipboard();
-            }
-            alert(res.msg);
-        });
-    </script>
 </body>
 </html>
