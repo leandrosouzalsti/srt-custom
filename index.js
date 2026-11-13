@@ -73,13 +73,11 @@ async function enviarWebhookSeguro(url, payload) {
     }
 }
 
-// Ordena o ranking semanal do maior para o menor
 function obterRankingOrdenado() {
     const rankObj = lerJSON(DB_RANKING, {});
     return Object.values(rankObj).sort((a, b) => b.total - a.total);
 }
 
-// Atualiza o ranking ao vivo no canal de Ranking
 async function publicarRankingAtualizado() {
     const lista = obterRankingOrdenado();
     if (lista.length === 0) return;
@@ -87,7 +85,7 @@ async function publicarRankingAtualizado() {
     const medalhas = ['🥇', '🥈', '🥉'];
     const linhas = lista.map((rec, index) => {
         const pos = medalhas[index] || `**${index + 1}º**`;
-        return `${pos} <@${rec.discordId}> (${rec.nome} • ID Jogo: \`${rec.idJogo}\`) — **${rec.total}** rec. *(Ini: ${rec.iniciantes} | Exp: ${rec.experientes})*`;
+        return `${pos} <@${rec.discordId}> (${rec.nome} • ID Jogo: \`${rec.idJogo}\`) — **${rec.total}** rec. *(Ini: ${rec.iniciantes} \vert{} Exp:${rec.experientes})*`;
     }).join('\n');
 
     await enviarWebhookSeguro(WEBHOOK_RANKING, {
@@ -102,7 +100,6 @@ async function publicarRankingAtualizado() {
     });
 }
 
-// Gera e envia a planilha de pagamentos (Embed + Arquivo CSV) para o canal financeiro
 async function enviarPlanilhaPagamentosSemana(listaRanking, dataFechamento) {
     if (!WEBHOOK_PAGAMENTOS_SEMANA || !WEBHOOK_PAGAMENTOS_SEMANA.startsWith('http')) return;
 
@@ -112,13 +109,7 @@ async function enviarPlanilhaPagamentosSemana(listaRanking, dataFechamento) {
 
     const cabecalhoCSV = "Posicao;Nome_Recrutador;ID_Jogo;ID_Discord;Total_Recrutamentos;Iniciantes;Nao_Iniciantes\n";
     const corpoCSV = listaRanking.map((rec, idx) => {
-        return `${idx + 1};"${rec.nome}";"${rec.idJogo}";"${rec.discordId}";${rec.total};${rec.iniciantes};${rec.experientes}`;
-    }).join('\n');
-    const csvBuffer = Buffer.from("\uFEFF" + cabecalhoCSV + corpoCSV, 'utf8');
-
-    try {
-        const formData = new FormData();
-        formData.append('file', new Blob([csvBuffer], { type: 'text/csv' }), `pagamentos-recrutamento-${dataFechamento}.csv`);
+        return `${idx + 1};"${rec.nome}";"${rec.idJogo}";"${rec.discordId}";${rec.total};${rec.iniciantes};${rec.experientes}`; }).join('\n'); const csvBuffer = Buffer.from("\uFEFF" + cabecalhoCSV + corpoCSV, 'utf8');  try { const formData = new FormData(); formData.append('file', new Blob([csvBuffer], { type: 'text/csv' }), `pagamentos-recrutamento-${dataFechamento}.csv`);
 
         const payload = {
             username: "SRT Motors Custom • Financeiro RH",
@@ -126,37 +117,7 @@ async function enviarPlanilhaPagamentosSemana(listaRanking, dataFechamento) {
             embeds: [{
                 title: "📑 FECHAMENTO FINANCEIRO • RECRUTADORES DA SEMANA",
                 color: 65398,
-                description: `Relação oficial com **ID do Jogo** e **ID do Discord** para realização dos pagamentos referentes aos recrutamentos da semana:\n\n${linhasTabela}`,
-                footer: { text: "Arquivo .CSV anexado acima • SRT Motors Custom" },
-                timestamp: new Date().toISOString()
-            }]
-        };
-
-        formData.append('payload_json', JSON.stringify(payload));
-
-        await fetch(WEBHOOK_PAGAMENTOS_SEMANA, {
-            method: 'POST',
-            body: formData
-        });
-    } catch (err) {
-        console.error("Erro ao enviar planilha de pagamentos:", err);
-    }
-}
-
-// ================= FECHAMENTO SEMANAL AUTOMÁTICO (DOMINGO 00:00 BRASÍLIA) =================
-let ultimaSemanaFechada = "";
-
-async function executarFechamentoSemanal() {
-    const lista = obterRankingOrdenado();
-    if (lista.length === 0) return false;
-
-    const agoraBrasil = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
-    const dataFechamento = agoraBrasil.toISOString().slice(0, 10);
-    const campeao = lista[0];
-
-    const medalhas = ['🥇', '🥈', '🥉'];
-    const topGeral = lista.map((rec, idx) => {
-        const icone = medalhas[idx] || `#${idx + 1}`;
+                description: `Relação oficial com **ID do Jogo** e **ID do Discord** para realização dos pagamentos referentes aos recrutamentos da semana:\n\n${linhasTabela}`, footer: { text: "Arquivo .CSV anexado acima • SRT Motors Custom" }, timestamp: new Date().toISOString() }] };  formData.append('payload_json', JSON.stringify(payload));  await fetch(WEBHOOK_PAGAMENTOS_SEMANA, { method: 'POST', body: formData }); } catch (err) { console.error("Erro ao enviar planilha de pagamentos:", err); } }  // ================= FECHAMENTO SEMANAL AUTOMÁTICO (DOMINGO 00:00 BRASÍLIA) ================= let ultimaSemanaFechada = "";  async function executarFechamentoSemanal() { const lista = obterRankingOrdenado(); if (lista.length === 0) return false;  const agoraBrasil = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })); const dataFechamento = agoraBrasil.toISOString().slice(0, 10); const campeao = lista[0];  const medalhas = ['🥇', '🥈', '🥉']; const topGeral = lista.map((rec, idx) => { const icone = medalhas[idx] \vert{}\vert{} `#${idx + 1}`;
         return `${icone} <@${rec.discordId}> (${rec.nome} • ID Jogo: \`${rec.idJogo}\`) — **${rec.total}** recrutado(s)`;
     }).join('\n');
 
@@ -166,7 +127,7 @@ async function executarFechamentoSemanal() {
         embeds: [{
             title: "👑 RECRUTADOR DA SEMANA • SRT MOTORS CUSTOM",
             color: 16766720,
-            description: `Parabéns <@${campeao.discordId}> (**${campeao.nome}** • ID Jogo: \`${campeao.idJogo}\`) pelo excelente trabalho e dedicação na expansão da nossa equipe!\n\n🔥 **Total na semana:** **${campeao.total} recrutamento(s)** *(Iniciantes: ${campeao.iniciantes} | Não Iniciantes: ${campeao.experientes})*\n\n📊 **Classificação Final da Semana:**\n${topGeral}\n\n🔄 *A contagem foi zerada para a nova semana. Boa sorte a todos!*`,
+            description: `Parabéns <@${campeao.discordId}> (**${campeao.nome}** • ID Jogo: \`${campeao.idJogo}\`) pelo excelente trabalho e dedicação na expansão da nossa equipe!\n\n🔥 **Total na semana:** **${campeao.total} recrutamento(s)** *(Iniciantes:${campeao.iniciantes} | Não Iniciantes: ${campeao.experientes})*\n\n📊 **Classificação Final da Semana:**\n${topGeral}\n\n🔄 *A contagem foi zerada para a nova semana. Boa sorte a todos!*`,
             footer: { text: "Cidade Nobre • SRT Motors Custom" },
             timestamp: new Date().toISOString()
         }]
@@ -212,7 +173,7 @@ app.post('/api/cursos', async (req, res) => {
             title: aprovado ? `🎓 CURSO APROVADO: ${curso.toUpperCase()}` : `❌ CURSO REPROVADO: ${curso.toUpperCase()}`,
             color: aprovado ? 15073280 : 3355443,
             fields: [
-                { name: "Aluno / Mecânico", value: `${aluno} (ID: ${idAluno})`, inline: true },
+                { name: "Aluno / Mecânico", value: `${aluno} (ID:${idAluno})`, inline: true },
                 { name: "Instrutor", value: instrutor || "Equipe SRT", inline: true },
                 { name: "Status", value: resultado, inline: true },
                 { name: "Observações", value: observacao || "Sem observações.", inline: false }
@@ -303,7 +264,7 @@ app.post('/api/recrutamento', async (req, res) => {
         color: isIniciante ? 65398 : 15073280,
         fields: [
             { name: "Recrutado (Discord)", value: `<@${idDiscCand}>\n\`${idDiscCand}\``, inline: true },
-            { name: "Nome / ID Jogo", value: `${candidato} (ID: ${novoRegistro.idCidadeCandidato})`, inline: true },
+            { name: "Nome / ID Jogo", value: `${candidato} (ID:${novoRegistro.idCidadeCandidato})`, inline: true },
             { name: "Perfil", value: `**${perfil}**`, inline: true },
             { name: "Recrutador (Discord)", value: `<@${idDiscRec}>\n\`${idDiscRec}\``, inline: true },
             { name: "Recrutador (ID Jogo)", value: `${recrutador} (ID: \`${novoRegistro.idCidadeRecrutador}\`)`, inline: true },
@@ -362,7 +323,7 @@ app.post('/api/recrutamento/:id/pagar', async (req, res) => {
         embeds: [{
             title: "✅ PAGAMENTO CONFIRMADO • CANDIDATO EFETIVADO",
             color: 15073280,
-            description: `**Recrutado:** <@${item.discordIdCandidato}> (${item.candidato} • ID Jogo: ${item.idCidadeCandidato})\n**Perfil:** ${item.tipoCandidato}\n**Recrutador:** <@${item.discordIdRecrutador}> (ID Jogo: ${item.idCidadeRecrutador || 'N/A'})\n\nPagamento confirmado e efetivado na **SRT Motors Custom**!`,
+            description: `**Recrutado:** <@${item.discordIdCandidato}> (${item.candidato} • ID Jogo: ${item.idCidadeCandidato})\n**Perfil:** ${item.tipoCandidato}\n**Recrutador:** <@${item.discordIdRecrutador}> (ID Jogo:${item.idCidadeRecrutador || 'N/A'})\n\nPagamento confirmado e efetivado na **SRT Motors Custom**!`,
             footer: { text: "Cidade Nobre • SRT Motors Custom" },
             timestamp: new Date().toISOString()
         }]
@@ -406,6 +367,10 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('broadcaster-ready', (room) => {
+        socket.to(room).emit('broadcaster-ready');
+    });
+
     // Sinalização WebRTC (Vídeo direto P2P em 1080p / 30fps)
     socket.on('webrtc-offer', (data) => {
         io.to(data.to).emit('webrtc-offer', { from: socket.id, offer: data.offer });
@@ -447,9 +412,7 @@ io.on('connection', (socket) => {
         await enviarWebhookSeguro(WEBHOOK_URL, {
             username: "SRT Motors Custom",
             embeds: [{
-                title: `🔴 ${roomLabel} INICIADA!`,
-                color: 15073280,
-                description: `**Mecânico / ID:** ${nomeUsuario}\n**Atividade:** ${info.nota || 'Acompanhamento de Oficina'}\n**Canal:** ${roomLabel}\n\n👉 **[CLIQUE AQUI PARA ASSISTIR EM TELA CHEIA](${viewUrl})**`,
+                title: `🔴 ${roomLabel} INICIADA!`, color: 15073280, description: `**Mecânico / ID:** ${nomeUsuario}\n**Atividade:** ${info.nota \vert{}\vert{} 'Acompanhamento de Oficina'}\n**Canal:** ${roomLabel}\n\n👉 **[CLIQUE AQUI PARA ASSISTIR EM TELA CHEIA](${viewUrl})**`,
                 footer: { text: "Cidade Nobre • SRT Motors Custom" },
                 timestamp: new Date().toISOString()
             }]
@@ -468,9 +431,7 @@ io.on('connection', (socket) => {
             await enviarWebhookSeguro(WEBHOOK_URL, {
                 username: "SRT Motors Custom",
                 embeds: [{
-                    title: `⚫ ${roomLabel} ENCERRADA`,
-                    color: 2303786,
-                    description: `**Mecânico / ID:** ${usuarioAnterior} encerrou a **${roomLabel}**. Canal liberado!`,
+                    title: `⚫ ${roomLabel} ENCERRADA`, color: 2303786, description: `**Mecânico / ID:** ${usuarioAnterior} encerrou a **${roomLabel}**. Canal liberado!`,
                     footer: { text: "Cidade Nobre • SRT Motors Custom" },
                     timestamp: new Date().toISOString()
                 }]
@@ -492,21 +453,14 @@ io.on('connection', (socket) => {
     socket.on('sync-webhook', async (payload) => {
         const room = payload.room || 'transmissao1';
         const roomLabel = formatRoomName(room);
-        const viewUrl = `${BASE_URL}/${room}`;
-
-        try {
-            const base64Data = payload.image.replace(/^data:image\/png;base64,/, "");
-            const buffer = Buffer.from(base64Data, 'base64');
-            const formData = new FormData();
-            formData.append('file', new Blob([buffer], { type: 'image/png' }), `srt-${room}.png`);
+        const viewUrl = `${BASE_URL}/${room}`;  try { const base64Data = payload.image.replace(/^data:image\/png;base64,/, ""); const buffer = Buffer.from(base64Data, 'base64'); const formData = new FormData(); formData.append('file', new Blob([buffer], { type: 'image/png' }), `srt-${room}.png`);
 
             const embedPayload = {
                 username: "SRT Motors Custom",
                 embeds: [{
                     title: `🖥️ SRT MOTORS CUSTOM | CAPTURA (${roomLabel})`,
                     color: 15073280,
-                    description: `**Mecânico / ID:** ${payload.usuario || 'Equipe SRT'}\n**Serviço / Nota:** ${payload.nota || 'Registro de Oficina'}\n**Link ao vivo:** [Assistir ${roomLabel}](${viewUrl})`,
-                    image: { url: `attachment://srt-${room}.png` },
+                    description: `**Mecânico / ID:** ${payload.usuario \vert{}\vert{} 'Equipe SRT'}\n**Serviço / Nota:** ${payload.nota || 'Registro de Oficina'}\n**Link ao vivo:** [Assistir ${roomLabel}](${viewUrl})`, image: { url: `attachment://srt-${room}.png` },
                     footer: { text: "Cidade Nobre • SRT Motors Custom" },
                     timestamp: new Date().toISOString()
                 }]
