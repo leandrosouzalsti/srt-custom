@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRT Motors Custom | Share Multi-Box</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        :root {
+            --preto: #0a0a0a;
+            --cinza-card: #141414;
+            --vermelho: #e60000;
+            --vermelho-hover: #ff1a1a;
+            --branco: #ffffff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body {
+            background-color: var(--preto);
+            background-image: radial-gradient(circle at top, #240000 0%, #0a0a0a 65%);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 25px;
+            min-height: 100vh;
+        }
+        header {
+            width: 100%;
+            max-width: 980px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--vermelho);
+            padding-bottom: 15px;
+            margin-bottom: 18px;
+        }
+        header h1 { font-size: 22px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 900; }
+        header h1 span { color: var(--vermelho); }
+        
+        /* Navegação entre as 3 telas */
+        .box-tabs {
+            width: 100%;
+            max-width: 980px;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .tab-btn {
+            flex: 1;
+            text-align: center;
+            text-decoration: none;
+            background: var(--cinza-card);
+            color: #aaa;
+            border: 1px solid #2a2a2a;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 13px;
+            letter-spacing: 1px;
+            transition: 0.2s;
+        }
+        .tab-btn:hover { border-color: var(--vermelho); color: var(--branco); }
+        .tab-btn.active {
+            background: var(--vermelho);
+            color: var(--branco);
+            border-color: var(--vermelho);
+        }
+
+        .status-badge {
+            background: var(--cinza-card);
+            border: 1px solid var(--vermelho);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .controls {
+            width: 100%;
+            max-width: 980px;
+            background: var(--cinza-card);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #262626;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input {
+            flex: 1;
+            min-width: 180px;
+            padding: 11px 14px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background: var(--preto);
+            color: var(--branco);
+            outline: none;
+        }
+        input:focus { border-color: var(--vermelho); }
+        button {
+            padding: 11px 18px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+        .btn-red { background: var(--vermelho); color: var(--branco); }
+        .btn-red:hover { background: var(--vermelho-hover); }
+        .btn-white { background: var(--branco); color: var(--preto); }
+        .btn-white:hover { background: #e0e0e0; }
+        .btn-dark { background: #262626; color: var(--branco); border: 1px solid #444; }
+        .btn-dark:hover { border-color: var(--vermelho); }
+        .screen-box {
+            width: 100%;
+            max-width: 980px;
+            aspect-ratio: 16 / 9;
+            background: #050505;
+            border: 2px solid var(--vermelho);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 25px rgba(230, 0, 0, 0.25);
+        }
+        video, img#remoteScreen {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .placeholder-text { color: #777; font-size: 15px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>SRT MOTORS <span>CUSTOM</span> • <span id="roomTitle">BOX 1</span></h1>
+        <div class="status-badge" id="status">● AGUARDANDO TRANSMISSÃO</div>
+    </header>
+
+    <div class="box-tabs">
+        <a href="/box1" class="tab-btn" id="tab-box1">TELA 01 (BOX 1)</a>
+        <a href="/box2" class="tab-btn" id="tab-box2">TELA 02 (BOX 2)</a>
+        <a href="/box3" class="tab-btn" id="tab-box3">TELA 03 (BOX 3)</a>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="usuario" placeholder="Seu Nome / ID na Cidade">
+        <input type="text" id="nota" placeholder="Descrição (ex: Tunagem / Orçamento)">
+        <button class="btn-red" onclick="iniciarCompartilhamento()">Compartilhar Tela</button>
+        <button class="btn-white" onclick="sincronizarDiscord()">Enviar Print p/ Discord</button>
+        <button class="btn-dark" onclick="copiarLink()">Copiar Link deste Box</button>
+    </div>
+
+    <div class="screen-box">
+        <span class="placeholder-text" id="placeholder">Nenhuma tela sendo transmitida neste Box no momento</span>
+        <video id="localVideo" autoplay muted style="display:none;"></video>
+        <img id="remoteScreen" style="display:none;" />
+    </div>
+
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script>
+        const socket = io();
+        const pathPart = window.location.pathname.replace('/', '').toLowerCase();
+        const currentRoom = ['box1', 'box2', 'box3'].includes(pathPart) ? pathPart : 'box1';
+
+        // Atualiza visual da aba ativa
+        document.getElementById(`tab-${currentRoom}`).classList.add('active');
+        document.getElementById('roomTitle').innerText = currentRoom.toUpperCase().replace('BOX', 'BOX ');
+
+        // Conecta na sala correspondente
+        socket.emit('join-room', currentRoom);
+
+        const localVideo = document.getElementById('localVideo');
+        const remoteScreen = document.getElementById('remoteScreen');
+        const placeholder = document.getElementById('placeholder');
+        const statusBadge = document.getElementById('status');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let transmitindo = false;
+        let streamInterval = null;
+
+        async function iniciarCompartilhamento() {
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { frameRate: 15 },
+                    audio: false
+                });
+                localVideo.srcObject = stream;
+                localVideo.style.display = 'block';
+                remoteScreen.style.display = 'none';
+                placeholder.style.display = 'none';
+                statusBadge.innerText = `🔴 TRANSMITINDO (${currentRoom.toUpperCase()})`;
+                transmitindo = true;
+
+                socket.emit('stream-started', {
+                    room: currentRoom,
+                    usuario: document.getElementById('usuario').value,
+                    nota: document.getElementById('nota').value
+                });
+
+                streamInterval = setInterval(() => {
+                    if (!transmitindo) return;
+                    canvas.width = 1280;
+                    canvas.height = 720;
+                    ctx.drawImage(localVideo, 0, 0, canvas.width, canvas.height);
+                    const frame = canvas.toDataURL('image/jpeg', 0.6);
+                    socket.emit('stream-frame', { room: currentRoom, frame });
+                }, 150);
+
+                stream.getVideoTracks()[0].onended = () => {
+                    transmitindo = false;
+                    clearInterval(streamInterval);
+                    localVideo.style.display = 'none';
+                    placeholder.style.display = 'block';
+                    statusBadge.innerText = '● TRANSMISSÃO ENCERRADA';
+
+                    socket.emit('stream-stopped', {
+                        room: currentRoom,
+                        usuario: document.getElementById('usuario').value
+                    });
+                };
+            } catch (err) {
+                alert('Permissão de captura de tela cancelada ou negada.');
+            }
+        }
+
+        socket.on('view-frame', (frameData) => {
+            if (transmitindo) return;
+            placeholder.style.display = 'none';
+            localVideo.style.display = 'none';
+            remoteScreen.style.display = 'block';
+            remoteScreen.src = frameData;
+            statusBadge.innerText = `🔴 ASSISTINDO (${currentRoom.toUpperCase()})`;
+        });
+
+        async function copiarImagemParaClipboard() {
+            canvas.toBlob(async (blob) => {
+                try {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ 'image/png': blob })
+                    ]);
+                } catch (e) {
+                    console.error('Erro ao copiar imagem:', e);
+                }
+            }, 'image/png');
+        }
+
+        function sincronizarDiscord() {
+            if (!transmitindo && remoteScreen.style.display === 'none') {
+                alert('Inicie o compartilhamento de tela primeiro.');
+                return;
+            }
+            canvas.width = 1280;
+            canvas.height = 720;
+            if (transmitindo) {
+                ctx.drawImage(localVideo, 0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.drawImage(remoteScreen, 0, 0, canvas.width, canvas.height);
+            }
+            const image = canvas.toDataURL('image/png');
+            socket.emit('sync-webhook', {
+                room: currentRoom,
+                image,
+                usuario: document.getElementById('usuario').value,
+                nota: document.getElementById('nota').value
+            });
+        }
+
+        function copiarLink() {
+            navigator.clipboard.writeText(window.location.href);
+            alert(`Link do ${currentRoom.toUpperCase().replace('BOX', 'BOX ')} copiado!`);
+        }
+
+        socket.on('sync-status', async (res) => {
+            if (res.fallback) {
+                await copiarImagemParaClipboard();
+            }
+            alert(res.msg);
+        });
+    </script>
+</body>
+</html>
